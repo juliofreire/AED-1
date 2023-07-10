@@ -163,15 +163,31 @@ func main() {
 	root.Add(9)
 	root.Add(7)
 	root.Add(3)
-	root.Add(1)
+	root.Add(2)
 	root.Add(12)
 	root.Add(13)
 	root.Add(17)
 	root.Add(20)
 
-	// // root.InOrder()
+	root.Height()
+	//root.Remove(21)
+	root.InOrder()
 
-	root.PreOrder()
+	//root.PreOrder()
 	fmt.Println("uhu")
 
+
+
+	fmt.Println("root: ", root.Value)
+	fmt.Println("root: ", root.Right.Value)
+	fmt.Println("Height after delete: ", root.Height())
+	root = root.Remove(1)
+	root = root.Remove(14)
+	//root = root.Remove(9)
+	//root = root.Remove(20)
+	//root = root.Remove(13)
+
+	root.InOrder()
+	//fmt.Println("rootNode value after delete: ", root.value)
+	fmt.Println("Height after delete: ", root.Height())
 }

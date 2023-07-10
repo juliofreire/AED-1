@@ -4,45 +4,67 @@ import (
 	"fmt"
 )
 
+type ITree interface {
+	Add(Value int) *BstNode
+	Search(Value int) bool
+	Min() int
+	Max() int
+	PreOrder()
+	InOrder()
+	PosOrder()
+	Remove(Value int) *BstNode
+	Height() int
+	// IsBst() bool
+	//Size() int
+	RotRight() *BstNode
+	RotLeft() *BstNode
+	Rebalance() *BstNode
+	UpdateProperties()
+}
+
 type BstNode struct {
-	left  *BstNode
-	right *BstNode
-	value int
+	Left   *BstNode
+	Right  *BstNode
+	Value  int
+	height int
+	bf     int
 }
 
 func (node *BstNode) NewNode(value int) *BstNode {
-	return &BstNode{value: value}
+	return &BstNode{Value: value, height: 0, bf: 0}
 }
 
-func (node *BstNode) Add(value int) {
+func (node *BstNode) Add(value int) *BstNode {
 	if node == nil {
 		node = node.NewNode(value)
 	}
 
-	if value < node.value {
-		if node.left == nil {
-			node.left = node.NewNode(value)
+	if value < node.Value {
+		if node.Left == nil {
+			node.Left = node.NewNode(value)
 		} else {
-			node.left.Add(value)
+			node.Left = node.Left.Add(value)
 		}
 	} else {
-		if node.right == nil {
-			node.right = node.NewNode(value)
+		if node.Right == nil {
+			node.Right = node.NewNode(value)
 		} else {
-			node.right.Add(value)
+			node.Right = node.Right.Add(value)
 		}
 	}
 
+	node.UpdateProperties()
+	return node
 }
 
 func (node *BstNode) Search(value int) bool {
 
-	if value == node.value {
+	if value == node.Value {
 		return true
-	} else if value < node.value && node.left != nil {
-		return node.left.Search(value)
-	} else if value > node.value && node.right != nil {
-		return node.right.Search(value)
+	} else if value < node.Value && node.Left != nil {
+		return node.Left.Search(value)
+	} else if value > node.Value && node.Right != nil {
+		return node.Right.Search(value)
 	} else {
 		return false
 	}
@@ -50,71 +72,183 @@ func (node *BstNode) Search(value int) bool {
 
 func (node *BstNode) Min() int {
 
-	if node.left == nil {
-		return node.value
+	if node.Left == nil {
+		return node.Value
 	}
-	return node.left.Min()
+	return node.Left.Min()
 }
 
 func (node *BstNode) Max() int {
 
-	if node.right == nil {
-		return node.value
+	if node.Right == nil {
+		return node.Value
 	}
-	return node.right.Max()
+	return node.Right.Max()
 }
 
 func (node *BstNode) PreOrder() {
-	fmt.Println(node.value)
-	if node.left != nil {
-		node.left.PreOrder()
+	fmt.Println(node.Value)
+	if node.Left != nil {
+		node.Left.PreOrder()
 	}
-	if node.right != nil {
-		node.right.PreOrder()
+	if node.Right != nil {
+		node.Right.PreOrder()
 	}
 }
 
 func (node *BstNode) InOrder() {
 
-	if node.left != nil {
-		node.left.InOrder()
+	if node.Left != nil {
+		node.Left.InOrder()
 	}
-	fmt.Println(node.value)
-	if node.right != nil {
-		node.right.InOrder()
+	fmt.Println(node.Value)
+	if node.Right != nil {
+		node.Right.InOrder()
 	}
 }
 func (node *BstNode) PosOrder() {
 
-	if node.left != nil {
-		node.left.PosOrder()
+	if node.Left != nil {
+		node.Left.PosOrder()
 	}
 
-	if node.right != nil {
-		node.right.PosOrder()
+	if node.Right != nil {
+		node.Right.PosOrder()
 	}
-	fmt.Println(node.value)
+	fmt.Println(node.Value)
 }
 
 func (node *BstNode) Remove(value int) *BstNode {
-	//case 1: 0 son
-	if value < node.value && node.left != nil {
-		node.left = node.left.Remove(value)
-	} else if value > node.value && node.right != nil {
-		node.right = node.right.Remove(value)
+	//TODO: check if the value exists
+	if value < node.Value && node.Left != nil {
+		node.Left = node.Left.Remove(value)
+	} else if value > node.Value && node.Right != nil {
+		node.Right = node.Right.Remove(value)
 	} else {
-		if node.left == nil && node.right == nil {
+		//case 1: 0 son
+		if node.Left == nil && node.Right == nil {
 			return nil
-		} else if node.left != nil && node.right == nil {
-			return node.left
-		} else if node.left == nil && node.right != nil {
-			return node.right
-		} else if node.left != nil && node.right != nil {
-			max := node.left.Max()
-			node.value = max
-			node.left = node.left.Remove(max)
+			//case 2: 1 son
+		} else if node.Left != nil && node.Right == nil {
+			return node.Left
+		} else if node.Left == nil && node.Right != nil {
+			return node.Right
+			//case 3: 2 son
+		} else if node.Left != nil && node.Right != nil {
+			max := node.Left.Max()
+			node.Value = max
+			node.Left = node.Left.Remove(max)
 			return node
 		}
 	}
+
+	node.UpdateProperties()
+	return node
+}
+
+func (node *BstNode) Height() int {
+	heightL := 0
+	heightR := 0
+
+	if node.Left != nil {
+		heightL = 1 + node.Left.Height()
+	}
+	if node.Right != nil {
+		heightR = 1 + node.Right.Height()
+	}
+
+	if heightL > heightR {
+		return heightL
+	} else {
+		return heightR
+	}
+}
+
+func (node *BstNode) UpdateProperties() {
+	heightL := 0
+	heightR := 0
+
+	if node.Left != nil {
+		heightL = 1 + node.Left.height
+	} else if node.Right != nil {
+		heightR = 1 + node.Right.height
+	}
+	if heightL > heightR {
+		node.height = 1 + heightL
+	} else {
+		node.height = 1 + heightR
+	}
+
+	node.bf = heightR - heightL
+}
+
+func (node *BstNode) RotRight() *BstNode {
+	auxnode := node.Left
+	node.Left = auxnode.Right
+	auxnode.Right = node
+	node.UpdateProperties()
+	auxnode.UpdateProperties()
+	return auxnode
+
+}
+
+func (node *BstNode) RotLeft() *BstNode {
+	auxnode := node.Right
+	node.Right = auxnode.Left
+	auxnode.Left = node
+	node.UpdateProperties()
+	auxnode.UpdateProperties()
+	return auxnode
+
+}
+
+// case 1: LeftLeft, bf: -2, bf: -1
+
+func (node *BstNode) RebalanceLL() *BstNode {
+	return node.RotRight()
+}
+
+// case 2 : LeftRight, bf: -2, bf: 0
+
+func (node *BstNode) RebalanceLR() *BstNode {
+	node.Left = node.Left.RotLeft()
+	return node.RebalanceLL()
+}
+
+// case 3 : RightRight, bf: 2, bf: 1
+
+func (node *BstNode) RebalanceRR() *BstNode {
+	return node.RotLeft()
+}
+
+// case 4 : LeftRight, bf: 2, bf: 0
+
+func (node *BstNode) RebalanceRL() *BstNode {
+	node.Right = node.Right.RotRight()
+	return node.RebalanceRR()
+}
+
+// merge all cases to rebalance in general way
+
+func (node *BstNode) Rebalance() *BstNode {
+	if node.bf <= -2 {
+		if node.Left.bf == -1 {
+			return node.RebalanceLL()
+		} else if node.Left.bf == 0 {
+			return node.RebalanceLL()
+		} else {
+			return node.RebalanceLR()
+		}
+
+	} else if node.bf >= 2 {
+		if node.Right.bf == -1 {
+			return node.RebalanceRR()
+		} else if node.Right.bf == 0 {
+			return node.RebalanceRR()
+		} else {
+			return node.RebalanceRL()
+		}
+	}
+
 	return node
 }
